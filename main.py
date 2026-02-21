@@ -1,0 +1,1 @@
+print("Inventory Management System Started")
