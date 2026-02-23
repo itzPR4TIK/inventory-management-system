@@ -95,3 +95,15 @@ def delete_product(product_id):
 
     conn.commit()
     conn.close()
+def get_low_stock(threshold=10):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT * FROM products WHERE quantity <= ?",
+        (threshold,)
+    )
+
+    low_stock_items = cursor.fetchall()
+    conn.close()
+    return low_stock_items

@@ -7,7 +7,8 @@ from database import (
     update_quantity,
     update_price,
     update_all,
-    delete_product
+    delete_product,
+    get_low_stock
 )
 
 # ---------------- PAGE CONFIG ----------------
@@ -40,11 +41,21 @@ if page == "🏠 Home":
     total_quantity = sum(p[2] for p in products) if products else 0
     total_value = sum(p[2] * p[3] for p in products) if products else 0
 
-    col1, col2, col3 = st.columns(3)
+    low_stock_items = get_low_stock()
+
+    col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("Total Products", total_products)
-    col2.metric("Total Stock Quantity", total_quantity)
+    col2.metric("Total Quantity", total_quantity)
     col3.metric("Inventory Value", f"₹ {total_value:.2f}")
+    col4.metric("Low Stock Items", len(low_stock_items))
+    low_stock = get_low_stock()
+
+    if low_stock:
+        st.warning("⚠️ Low Stock Alert!")
+
+        for item in low_stock:
+            st.write(f"Product: {item[1]} | Quantity Left: {item[2]}")
 
     st.divider()
 
@@ -83,15 +94,20 @@ elif page == "📋 Inventory":
 
     st.title("Inventory List")
 
+    search = st.text_input("🔎 Search Product")
+
     if products:
-        st.dataframe(
-            products,
-            use_container_width=True,
-            height=400
-        )
+        if search:
+            filtered = [
+                p for p in products
+                if search.lower() in p[1].lower()
+            ]
+            st.dataframe(filtered, use_container_width=True)
+        else:
+            st.dataframe(products, use_container_width=True)
     else:
         st.warning("Inventory is empty.")
-
+        
 # ---------------- UPDATE PRODUCT ----------------
 elif page == "✏️ Update Product":
 
